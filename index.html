@@ -6,17 +6,38 @@
 </head>
 <body>
 
-<h2>Array:</h2>
-<ul id="list"></ul>
+<h2>Players Records</h2>
 
-<input type="number" id="num" placeholder="رقم جديد">
-<button id="addBtn">Add</button>
+<form id="playerForm">
+  <label>
+    Name: <input type="text" id="name" required>
+  </label>
+  <label>
+    Date: <input type="date" id="date" required>
+  </label>
+  <label>
+    Score: <input type="number" id="score" required>
+  </label>
+  <button type="submit">Add Player</button>
+</form>
+
+<h3>Records:</h3>
+<table border="1" id="recordsTable">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Date</th>
+      <th>Score</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-  import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+  import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 
-  // 👇 Firebase config
+  // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyBnE1fOPROeYeJmD3KETCom0EsHxY09nbs",
     authDomain: "ffm-resluts-trackin-gog.firebaseapp.com",
@@ -30,43 +51,50 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  const listEl = document.getElementById("list");
-  const numInput = document.getElementById("num");
+  const form = document.getElementById("playerForm");
+  const tableBody = document.querySelector("#recordsTable tbody");
 
-  // 🤖 show data
-  function showData(arr) {
-    listEl.innerHTML = "";
-    arr.forEach(x => {
-      const li = document.createElement("li");
-      li.textContent = x;
-      listEl.appendChild(li);
-    });
+  // عرض البيانات في الجدول
+  function showData(records) {
+    tableBody.innerHTML = "";
+    for (let r of records) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${r.Name}</td><td>${r.Date}</td><td>${r.Score}</td>`;
+      tableBody.appendChild(tr);
+    }
   }
 
-  // read once
+  // تحميل البيانات من Firebase
   async function loadData() {
-    const snapshot = await get(ref(db, "numbers"));
+    const snapshot = await get(ref(db, "records"));
     const data = snapshot.val();
     if (data) showData(data);
   }
 
   loadData();
 
-  // add number
-  document.getElementById("addBtn").addEventListener("click", async () => {
-    const n = parseInt(numInput.value);
-    if (!n && n !== 0) return;
+  // عند إرسال الفورم
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-    const snapshot = await get(ref(db, "numbers"));
-    let arr = snapshot.val() || [];
+    const name = document.getElementById("name").value;
+    const date = document.getElementById("date").value;
+    const score = parseInt(document.getElementById("score").value);
 
-    arr.push(n);
-    await set(ref(db, "numbers"), arr);
+    const snapshot = await get(ref(db, "records"));
+    let records = snapshot.val() || [];
 
-    showData(arr);
-    numInput.value = "";
+    records.push({ Name: name, Date: date, Score: score });
+    await set(ref(db, "records"), records);
+
+    showData(records);
+    form.reset();
   });
 </script>
 
 </body>
+
+  
+
+
 </html>
