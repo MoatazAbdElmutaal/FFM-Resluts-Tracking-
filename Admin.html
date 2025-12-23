@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Add Round</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background: #f9f9f9;
+  }
+
+  h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  form {
+    max-width: 500px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+
+  form label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+
+  form input, form textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 4px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+
+  form button {
+    width: 100%;
+    padding: 10px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  form button:hover {
+    background: #45a049;
+  }
+
+  @media screen and (max-width: 600px) {
+    form {
+      padding: 15px;
+    }
+    form button {
+      font-size: 14px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<h2>Admin - Add Round</h2>
+
+<form id="adminForm">
+  <label>رقم الجولة:
+    <input type="number" id="roundNumber" required>
+  </label>
+  <label>تاريخ الجولة:
+    <input type="date" id="date" required>
+  </label>
+  <label>مكنة الجولة:
+    <input type="text" id="mkna" required>
+  </label>
+  <label>نقاط مكنة الجولة:
+    <input type="number" id="mknaScore" required>
+  </label>
+  <label>طيش الجولة:
+    <input type="text" id="tysh" required>
+  </label>
+  <label>نقاط طيش الجولة:
+    <input type="number" id="tyshScore" required>
+  </label>
+  <label>ملاحظة:
+    <textarea id="note"></textarea>
+  </label>
+  <button type="submit">إضافة الجولة</button>
+</form>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+  import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBnE1fOPROeYeJmD3KETCom0EsHxY09nbs",
+    authDomain: "ffm-resluts-trackin-gog.firebaseapp.com",
+    databaseURL: "https://ffm-resluts-trackin-gog-default-rtdb.firebaseio.com/",
+    projectId: "ffm-resluts-trackin-gog",
+    storageBucket: "ffm-resluts-trackin-gog.appspot.com",
+    messagingSenderId: "876550614050",
+    appId: "1:876550614050:web:2193d57a46268205126e7b"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const form = document.getElementById("adminForm");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const roundNumber = parseInt(document.getElementById("roundNumber").value);
+    const date = document.getElementById("date").value;
+    const mkna = document.getElementById("mkna").value;
+    const mknaScore = parseInt(document.getElementById("mknaScore").value);
+    const tysh = document.getElementById("tysh").value;
+    const tyshScore = parseInt(document.getElementById("tyshScore").value);
+    const note = document.getElementById("note").value;
+
+    // جلب البيانات الحالية من Firebase
+    const snapshot = await get(ref(db, "rounds"));
+    let rounds = snapshot.val() || [];
+
+    // إضافة الجولة الجديدة
+    rounds.push({ roundNumber, date, mkna, mknaScore, tysh, tyshScore, note });
+
+    // حفظ البيانات في Firebase
+    await set(ref(db, "rounds"), rounds);
+
+    alert("تم إضافة الجولة بنجاح!");
+    form.reset();
+  });
+</script>
+
+</body>
+</html>
