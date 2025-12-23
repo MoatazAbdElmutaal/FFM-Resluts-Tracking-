@@ -1,54 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>Firebase Array Demo</title>
-</head>
-  <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rounds Records</title>
+<style>
   body {
     font-family: Arial, sans-serif;
     margin: 20px;
     background: #f9f9f9;
   }
 
-  h2, h3 {
+  h2 {
+    text-align: center;
     color: #333;
-  }
-
-  form {
     margin-bottom: 20px;
-    background: #fff;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 0 5px rgba(0,0,0,0.1);
-  }
-
-  form label {
-    display: block;
-    margin-bottom: 10px;
-  }
-
-  form input {
-    padding: 5px;
-    margin-left: 5px;
-  }
-
-  form button {
-    padding: 7px 15px;
-    background: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-
-  form button:hover {
-    background: #45a049;
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
+    margin-bottom: 20px;
     background: #fff;
     border-radius: 8px;
     overflow: hidden;
@@ -58,47 +30,69 @@
   table th, table td {
     padding: 10px;
     border: 1px solid #ddd;
-    text-align: left;
+    text-align: center;
   }
 
   table th {
-    background: #f2f2f2;
+    background: #4CAF50;
+    color: white;
   }
-  </style>
+
+  button {
+    display: block;
+    margin: 0 auto 20px auto;
+    padding: 10px 20px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  button:hover {
+    background: #45a049;
+  }
+
+  /* Responsive */
+  @media screen and (max-width: 600px) {
+    table th, table td {
+      padding: 6px;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      font-size: 14px;
+    }
+  }
+</style>
+</head>
 <body>
 
-<h2>Players Records</h2>
+<h2>Rounds Records</h2>
 
-<form id="playerForm">
-  <label>
-    Name: <input type="text" id="name" required>
-  </label>
-  <label>
-    Date: <input type="date" id="date" required>
-  </label>
-  <label>
-    Score: <input type="number" id="score" required>
-  </label>
-  <button type="submit">Add Player</button>
-</form>
-
-<h3>Records:</h3>
-<table border="1" id="recordsTable">
+<table id="roundsTable">
   <thead>
     <tr>
-      <th>Name</th>
-      <th>Date</th>
-      <th>Score</th>
+      <th>رقم الجولة</th>
+      <th>تاريخ الجولة</th>
+      <th>مكنة الجولة</th>
+      <th>نقاط مكنة الجولة</th>
+      <th>طيش الجولة</th>
+      <th>نقاط طيش الجولة</th>
+      <th>ملاحظة</th>
     </tr>
   </thead>
   <tbody></tbody>
 </table>
 
+<button id="refreshBtn">تحديث البيانات</button>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-  import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 
-  // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyBnE1fOPROeYeJmD3KETCom0EsHxY09nbs",
     authDomain: "ffm-resluts-trackin-gog.firebaseapp.com",
@@ -111,51 +105,37 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
+  const tableBody = document.querySelector("#roundsTable tbody");
+  const refreshBtn = document.getElementById("refreshBtn");
 
-  const form = document.getElementById("playerForm");
-  const tableBody = document.querySelector("#recordsTable tbody");
-
-  // عرض البيانات في الجدول
-  function showData(records) {
-    tableBody.innerHTML = "";
-    for (let r of records) {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${r.Name}</td><td>${r.Date}</td><td>${r.Score}</td>`;
-      tableBody.appendChild(tr);
+  async function loadRounds() {
+    const snapshot = await get(ref(db, "rounds"));
+    const data = snapshot.val();
+    if (data) {
+      tableBody.innerHTML = "";
+      for (let r of data) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${r.roundNumber}</td>
+          <td>${r.date}</td>
+          <td>${r.mkna}</td>
+          <td>${r.mknaScore}</td>
+          <td>${r.tysh}</td>
+          <td>${r.tyshScore}</td>
+          <td>${r.note}</td>
+        `;
+        tableBody.appendChild(tr);
+      }
     }
   }
 
-  // تحميل البيانات من Firebase
-  async function loadData() {
-    const snapshot = await get(ref(db, "records"));
-    const data = snapshot.val();
-    if (data) showData(data);
-  }
+  // تحميل البيانات عند فتح الصفحة
+  loadRounds();
 
-  loadData();
-
-  // عند إرسال الفورم
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const name = document.getElementById("name").value;
-    const date = document.getElementById("date").value;
-    const score = parseInt(document.getElementById("score").value);
-
-    const snapshot = await get(ref(db, "records"));
-    let records = snapshot.val() || [];
-
-    records.push({ Name: name, Date: date, Score: score });
-    await set(ref(db, "records"), records);
-
-    showData(records);
-    form.reset();
-  });
+  // تحميل البيانات عند الضغط على زر التحديث
+  refreshBtn.addEventListener("click", loadRounds);
 </script>
 
 </body>
-
-  
-
-
 </html>
+
