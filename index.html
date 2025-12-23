@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Firebase Array Demo</title>
+</head>
+<body>
+
+<h2>Array:</h2>
+<ul id="list"></ul>
+
+<input type="number" id="num" placeholder="رقم جديد">
+<button id="addBtn">Add</button>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+  import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+
+  // 👇 Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyBnE1fOPROeYeJmD3KETCom0EsHxY09nbs",
+    authDomain: "ffm-resluts-trackin-gog.firebaseapp.com",
+    databaseURL: "https://ffm-resluts-trackin-gog-default-rtdb.firebaseio.com/",
+    projectId: "ffm-resluts-trackin-gog",
+    storageBucket: "ffm-resluts-trackin-gog.appspot.com",
+    messagingSenderId: "876550614050",
+    appId: "1:876550614050:web:2193d57a46268205126e7b"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const listEl = document.getElementById("list");
+  const numInput = document.getElementById("num");
+
+  // 🤖 show data
+  function showData(arr) {
+    listEl.innerHTML = "";
+    arr.forEach(x => {
+      const li = document.createElement("li");
+      li.textContent = x;
+      listEl.appendChild(li);
+    });
+  }
+
+  // read once
+  async function loadData() {
+    const snapshot = await get(ref(db, "numbers"));
+    const data = snapshot.val();
+    if (data) showData(data);
+  }
+
+  loadData();
+
+  // add number
+  document.getElementById("addBtn").addEventListener("click", async () => {
+    const n = parseInt(numInput.value);
+    if (!n && n !== 0) return;
+
+    const snapshot = await get(ref(db, "numbers"));
+    let arr = snapshot.val() || [];
+
+    arr.push(n);
+    await set(ref(db, "numbers"), arr);
+
+    showData(arr);
+    numInput.value = "";
+  });
+</script>
+
+</body>
+</html>
