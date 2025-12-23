@@ -90,9 +90,6 @@
   <label>نقاط طيش الجولة:
     <input type="number" id="tyshScore" required>
   </label>
-  <label>ملاحظة:
-    <textarea id="note"></textarea>
-  </label>
   <button type="submit">إضافة الجولة</button>
 </form>
 
@@ -124,14 +121,14 @@
     const mknaScore = parseInt(document.getElementById("mknaScore").value);
     const tysh = document.getElementById("tysh").value;
     const tyshScore = parseInt(document.getElementById("tyshScore").value);
-    const note = document.getElementById("note").value;
+  
 
     // جلب البيانات الحالية من Firebase
     const snapshot = await get(ref(db, "rounds"));
     let rounds = snapshot.val() || [];
 
     // إضافة الجولة الجديدة
-    rounds.push({ roundNumber, date, mkna, mknaScore, tysh, tyshScore, note });
+    rounds.push({ roundNumber, date, mkna, mknaScore, tysh, tyshScore});
 
     // حفظ البيانات في Firebase
     await set(ref(db, "rounds"), rounds);
